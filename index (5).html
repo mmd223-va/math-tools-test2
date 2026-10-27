@@ -1,0 +1,2456 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ابزارهای ریاضی</title>
+<style>
+@font-face {
+  font-family: Vazirmatn;
+  src: url("./Vazirmatn[wght].ttf") format("truetype");
+  font-weight: 100 900;
+  font-display: swap;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  padding: 75px 15px 30px;
+  background: #f1f5fb;
+  color: #253247;
+  font-family: Vazirmatn, Tahoma, sans-serif;
+  transition: .25s;
+}
+
+.container {
+  width: 100%;
+  max-width: 700px;
+  margin: auto;
+  padding: 25px;
+  background: white;
+  border-radius: 18px;
+  box-shadow: 0 8px 30px #17255412;
+}
+
+h1, h2 { text-align: center; color: #2457c5; }
+h1 { font-size: 29px; }
+h2 { font-size: 23px; }
+p { line-height: 1.9; }
+
+.page { display: none; }
+.page.active { display: block; }
+
+button, input { font: inherit; }
+
+button {
+  border: 0;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: background .2s, transform .2s;
+}
+
+button:hover { transform: translateY(-1px); }
+
+.menu-button {
+  display: block;
+  width: 100%;
+  margin: 12px 0;
+  padding: 16px;
+  background: #e8efff;
+  color: #2457c5;
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.menu-button:hover { background: #d8e4ff; }
+
+.back-button {
+  margin-bottom: 15px;
+  padding: 10px 16px;
+  background: #64748b;
+  color: white;
+}
+
+.action-button {
+  margin: 8px 0;
+  padding: 12px 20px;
+  background: #2457c5;
+  color: white;
+  font-weight: 700;
+}
+
+.action-button:hover { background: #1946a5; }
+
+#themeButton {
+  position: fixed;
+  top: 15px;
+  left: 15px;
+  z-index: 1000;
+  padding: 10px 14px;
+  background: #e8efff;
+  color: #2457c5;
+  font-weight: 700;
+  box-shadow: 0 3px 10px #0002;
+}
+
+input {
+  display: block;
+  width: 100%;
+  margin: 12px 0;
+  padding: 12px;
+  border: 1px solid #cbd5e1;
+  border-radius: 9px;
+  background: white;
+  color: #253247;
+  font-size: 16px;
+}
+
+.result {
+  margin-top: 18px;
+  padding: 15px;
+  background: #eff6ff;
+  border-radius: 10px;
+  line-height: 2;
+  overflow-wrap: anywhere;
+  white-space: pre-line;
+}
+
+.error { background: #fff0f0; color: #b42318; }
+
+.prime-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(55px, 1fr));
+  gap: 7px;
+  margin-top: 15px;
+}
+
+.number-cell {
+  padding: 10px 5px;
+  text-align: center;
+  background: #e5e7eb;
+  color: #334155;
+  border-radius: 7px;
+}
+
+.number-cell.prime {
+  background: #d1fae5;
+  color: #065f46;
+  font-weight: 700;
+}
+
+.number-cell.not-prime {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+/* خروجی تجزیه و درخت عوامل اول */
+#factorResult {
+  padding: 0;
+  background: transparent;
+  white-space: normal;
+}
+
+.factor-final, .factor-tree {
+  margin-top: 18px;
+  padding: 18px 12px;
+  border: 1px solid #bfdbfe;
+  border-radius: 12px;
+  background: #f8fbff;
+  text-align: center;
+}
+
+.factor-final h3, .factor-tree h3 {
+  margin: 0 0 16px;
+  color: #2457c5;
+}
+
+.factor-equation {
+  direction: ltr;
+  font-size: 23px;
+  font-weight: 700;
+  color: #1d4ed8;
+  overflow-wrap: anywhere;
+}
+
+/* درخت با موقعیت‌دهی دقیق و خطوط SVG */
+.factor-tree {
+  margin-top: 18px;
+  padding: 18px 12px;
+  border: 1px solid #bfdbfe;
+  border-radius: 12px;
+  background: #f8fbff;
+  text-align: center;
+  overflow-x: auto;
+  direction: ltr;
+}
+
+.factor-tree h3 {
+  margin: 0 0 16px;
+  color: #2457c5;
+}
+
+.tree-canvas {
+  position: relative;
+  margin: 0 auto;
+  direction: ltr;
+}
+
+.tree-canvas svg {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  pointer-events: none;
+}
+
+.tree-line {
+  stroke: #94a3b8;
+  stroke-width: 2;
+  fill: none;
+}
+
+.tree-node,
+.tree-leaf {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  min-width: 40px;
+  padding: 7px 12px;
+  border-radius: 8px;
+  font-weight: 700;
+  text-align: center;
+  white-space: nowrap;
+  z-index: 1;
+}
+
+.tree-node {
+  background: #dbeafe;
+  color: #1d4ed8;
+}
+
+.tree-leaf {
+  background: #d1fae5;
+  color: #065f46;
+  border: 1px solid #6ee7b7;
+}
+
+body.dark .factor-tree {
+  background: #1e293b;
+  border-color: #475569;
+}
+
+body.dark .factor-tree h3 {
+  color: #93b4ff;
+}
+
+body.dark .tree-node {
+  background: #334155;
+  color: #dbeafe;
+}
+
+body.dark .tree-leaf {
+  background: #14532d;
+  color: #bbf7d0;
+}
+
+body.dark .tree-line {
+  stroke: #64748b;
+}
+body.dark {
+  background: #0f172a;
+  color: #e2e8f0;
+}
+
+body.dark .container { background: #1e293b; }
+body.dark h1, body.dark h2 { color: #93b4ff; }
+
+body.dark input {
+  background: #334155;
+  color: white;
+  border-color: #475569;
+}
+
+body.dark .result { background: #334155; color: #e2e8f0; }
+body.dark .menu-button { background: #334155; color: #bfdbfe; }
+body.dark .number-cell { background: #334155; color: #e2e8f0; }
+body.dark .number-cell.prime { background: #14532d; color: #bbf7d0; }
+body.dark .number-cell.not-prime { background: #7f1d1d; color: #fecaca; }
+
+body.dark .factor-final,
+body.dark .factor-tree {
+  background: #1e293b;
+  border-color: #475569;
+}
+
+body.dark .factor-final h3,
+body.dark .factor-tree h3,
+body.dark .factor-equation {
+  color: #93b4ff;
+}
+
+body.dark .tree-node { background: #334155; color: #dbeafe; }
+body.dark .tree-leaf { background: #14532d; color: #bbf7d0; }
+body.dark .tree-line { stroke: #64748b; }
+
+@media (max-width: 500px) {
+  .container { padding: 16px; }
+  h1 { font-size: 25px; }
+  .factor-equation { font-size: 19px; }
+}
+
+/* ===== طراحی جدید سایت ریاضی ===== */
+
+:root {
+  --main-color: #6366f1;
+  --main-hover: #4f46e5;
+  --page-bg: #f4f6fc;
+  --card-bg: #ffffff;
+  --text-color: #20243a;
+  --muted-color: #6b7280;
+  --border-color: #e5e7eb;
+  --input-bg: #ffffff;
+  --soft-bg: #eef2ff;
+  --card-shadow: 0 8px 28px rgba(31, 41, 55, 0.07);
+}
+
+body {
+  background: var(--page-bg);
+  color: var(--text-color);
+  transition: background 0.25s ease, color 0.25s ease;
+}
+
+body.dark {
+  --page-bg: #111827;
+  --card-bg: #1f2937;
+  --text-color: #f3f4f6;
+  --muted-color: #c0c7d2;
+  --border-color: #374151;
+  --input-bg: #111827;
+  --soft-bg: #312e81;
+  --card-shadow: 0 8px 28px rgba(0, 0, 0, 0.16);
+}
+
+.container {
+  max-width: 1050px;
+  margin: 30px auto;
+  padding: 26px;
+  background: var(--card-bg);
+  color: var(--text-color);
+  border: 1px solid var(--border-color);
+  border-radius: 24px;
+  box-shadow: var(--card-shadow);
+}
+
+h1 {
+  color: var(--main-color);
+  font-weight: 800;
+  line-height: 1.7;
+}
+
+h2 {
+  color: var(--text-color);
+  font-weight: 750;
+  line-height: 1.8;
+}
+
+p {
+  line-height: 1.9;
+}
+
+.menu-button,
+.action-button,
+.back-button,
+#themeButton {
+  border: none;
+  border-radius: 13px;
+  padding: 12px 19px;
+  font-family: inherit;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform 0.18s ease, box-shadow 0.18s ease,
+    background 0.18s ease;
+}
+
+.menu-button,
+.action-button {
+  background: var(--main-color);
+  color: #ffffff;
+  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.18);
+}
+
+.menu-button:hover,
+.action-button:hover {
+  background: var(--main-hover);
+  transform: translateY(-2px);
+  box-shadow: 0 7px 17px rgba(99, 102, 241, 0.22);
+}
+
+.back-button {
+  background: var(--soft-bg);
+  color: var(--main-color);
+}
+
+#themeButton {
+  background: var(--soft-bg);
+  color: var(--text-color);
+}
+
+input,
+select,
+textarea {
+  box-sizing: border-box;
+  max-width: 100%;
+  padding: 12px 14px;
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  background: var(--input-bg);
+  color: var(--text-color);
+  font: inherit;
+  outline: none;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+  border-color: var(--main-color);
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
+}
+
+.result {
+  margin-top: 20px;
+  padding: 18px;
+  border: 1px solid var(--border-color);
+  border-radius: 16px;
+  background: var(--soft-bg);
+  color: var(--text-color);
+  overflow-wrap: anywhere;
+}
+
+.error {
+  border-radius: 12px;
+  padding: 12px;
+}
+
+.prime-grid {
+  gap: 8px;
+}
+
+.number-cell {
+  border-radius: 9px;
+  transition: transform 0.15s ease;
+}
+
+.number-cell:hover {
+  transform: scale(1.04);
+}
+
+.factor-tree {
+  border: 1px solid var(--border-color);
+  border-radius: 16px;
+  background: var(--card-bg);
+}
+
+.factor-equation {
+  color: var(--main-color);
+  font-weight: 700;
+  overflow-wrap: anywhere;
+}
+
+.factor-final {
+  padding: 15px;
+  border-radius: 12px;
+  background: var(--soft-bg);
+  color: var(--text-color);
+  line-height: 2;
+}
+
+button:focus-visible {
+  outline: 3px solid rgba(99, 102, 241, 0.5);
+  outline-offset: 3px;
+}
+
+@media (max-width: 600px) {
+  .container {
+    margin: 12px;
+    padding: 16px;
+    border-radius: 18px;
+  }
+
+  h1 {
+    font-size: 1.5rem;
+  }
+
+  .menu-button,
+  .action-button,
+  .back-button,
+  #themeButton {
+    max-width: 100%;
+    padding: 10px 14px;
+  }
+
+  input {
+    width: 100%;
+  }
+}
+
+
+/* ===== طراحی صفحه اصلی ===== */
+
+body {
+  background:
+    radial-gradient(ellipse at 10% 0%, #e0e7ff 0, transparent 40%),
+    #f5f7fc;
+}
+
+body.dark {
+  background:
+    radial-gradient(ellipse at 10% 0%, #252451 0, transparent 40%),
+    #0f172a;
+}
+
+.container {
+  max-width: 1000px;
+  padding: 30px;
+  border: 1px solid #e7eaf3;
+  border-radius: 26px;
+  box-shadow: 0 18px 55px #18254b12;
+}
+
+body.dark .container {
+  border-color: #334155;
+  background: #172033;
+}
+
+.hero {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  padding: 36px;
+  border-radius: 24px;
+  background: linear-gradient(125deg, #4338ca, #6366f1 60%, #818cf8);
+  color: white;
+}
+
+.hero h1 {
+  position: relative;
+  z-index: 1;
+  margin: 18px 0 10px;
+  color: white;
+  font-size: clamp(27px, 4vw, 39px);
+  text-align: right;
+  line-height: 1.7;
+}
+
+.hero p {
+  position: relative;
+  z-index: 1;
+  max-width: 560px;
+  color: #eef2ff;
+  font-size: 15px;
+}
+
+.hero-label {
+  display: inline-block;
+  padding: 7px 12px;
+  border: 1px solid #ffffff45;
+  border-radius: 30px;
+  background: #ffffff17;
+  font-size: 13px;
+}
+
+.hero-button {
+  position: relative;
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  gap: 14px;
+  margin-top: 15px;
+  padding: 13px 18px;
+  border-radius: 12px;
+  background: white;
+  color: #4338ca;
+  font-weight: 800;
+}
+
+.hero-button:hover {
+  background: #eef2ff;
+}
+
+.hero-decoration {
+  position: absolute;
+  z-index: -1;
+  left: 24px;
+  bottom: -85px;
+  color: #ffffff17;
+  font-size: 260px;
+  font-weight: 900;
+  line-height: 1;
+  pointer-events: none;
+}
+
+.home-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 35px 0 18px;
+}
+
+.home-heading h2 {
+  margin: 0;
+  text-align: right;
+  color: var(--main-color, #4f46e5);
+  font-size: 23px;
+}
+
+.home-heading p {
+  margin: 5px 0 0;
+  color: #778197;
+  font-size: 14px;
+}
+
+body.dark .home-heading p {
+  color: #b8c2d5;
+}
+
+.tool-count {
+  flex-shrink: 0;
+  padding: 7px 12px;
+  border-radius: 30px;
+  background: #eef2ff;
+  color: #4f46e5;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+body.dark .tool-count {
+  background: #312e81;
+  color: #c7d2fe;
+}
+
+.tool-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.tool-card {
+  display: flex;
+  min-width: 0;
+  min-height: 218px;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: 22px;
+  border: 1px solid #e7eaf3;
+  border-radius: 19px;
+  background: white;
+  color: #20243a;
+  text-align: right;
+  transition: transform .2s ease, box-shadow .2s ease,
+    border-color .2s ease;
+}
+
+.tool-card:hover {
+  transform: translateY(-4px);
+  border-color: #c7d2fe;
+  box-shadow: 0 12px 30px #3730a315;
+}
+
+body.dark .tool-card {
+  border-color: #374151;
+  background: #202b40;
+  color: #f3f4f6;
+}
+
+body.dark .tool-card:hover {
+  border-color: #818cf8;
+}
+
+.calculator-shell {
+  max-width: 430px; margin: 20px auto 0; padding: 18px;
+  border: 1px solid #e2e8f0; border-radius: 20px; background: #f8fafc;
+}
+body.dark .calculator-shell { border-color: #374151; background: #172033; }
+.calculator-display { min-height: 58px; margin: 10px 0 16px; direction: ltr; text-align: left; font-size: 24px; font-weight: 700; }
+.calculator-keypad { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 9px; }
+.calc-key { min-height: 52px; padding: 8px; background: #e8edf5; color: #1e293b; font-size: 19px; font-weight: 700; }
+body.dark .calc-key { background: #334155; color: #f8fafc; }
+.calc-function { background: #dbeafe; color: #1d4ed8; }
+body.dark .calc-function { background: #1e3a5f; color: #bfdbfe; }
+.calc-danger { background: #fee2e2; color: #b91c1c; }
+body.dark .calc-danger { background: #512b35; color: #fecaca; }
+.calc-equals { background: #2457c5; color: white; }
+.calculator-help { margin-bottom: 0; color: #64748b; font-size: 13px; }
+body.dark .calculator-help { color: #cbd5e1; }
+@media (max-width: 420px) { .calculator-shell { padding: 12px; } .calculator-keypad { gap: 6px; } .calc-key { min-height: 46px; font-size: 17px; } }
+
+.tool-title {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 17px;
+  font-weight: 800;
+  line-height: 1.6;
+}
+
+.tool-description {
+  display: block;
+  margin-bottom: 16px;
+  color: #64748b;
+  font-size: 14px;
+  line-height: 1.8;
+}
+
+body.dark .tool-description { color: #cbd5e1; }
+
+.tool-link {
+  display: block;
+  margin-top: auto;
+  font-size: 13px;
+  font-weight: 800;
+  color: #2457c5;
+}
+
+body.dark .tool-link { color: #a5b4fc; }
+
+.tool-icon {
+   display: grid;
+  width: 49px;
+  height: 49px;
+  place-items: center;
+  margin-bottom: 17px;
+  border-radius: 15px;
+  font-size: 25px;
+  font-weight: 800;
+}
+
+.card-purple .tool-icon {
+  background: #ede9fe;
+  color: #6d28d9;
+}
+
+.card-blue .tool-icon {
+  background: #dbeafe;
+  color: #1d4ed8;
+}
+
+.card-green .tool-icon {
+  background: #d1fae5;
+  color: #047857;
+}
+
+.card-orange .tool-icon {
+  background: #ffedd5;
+  color: #c2410c;
+}
+
+.tool-title {
+  font-size: 17px;
+  font-weight: 800;
+  line-height: 1.8;
+}
+
+.tool-description {
+  margin-top: 7px;
+  color: #737d91;
+  font-size: 13px;
+  font-weight: 400;
+  line-height: 1.9;
+}
+
+body.dark .tool-description {
+  color: #c0cada;
+}
+
+.tool-link {
+  margin-top: 17px;
+  color: #4f46e5;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+body.dark .tool-link {
+  color: #a5b4fc;
+}
+
+.home-footer {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 10px;
+  margin-top: 28px;
+  padding-top: 20px;
+  border-top: 1px solid #e5e7eb;
+  color: #7b8497;
+  font-size: 12px;
+}
+
+body.dark .home-footer {
+  border-color: #374151;
+  color: #aeb9ca;
+}
+
+/* ابزارهای داخلی */
+
+.page > h2 {
+  margin-top: 22px;
+  margin-bottom: 12px;
+}
+
+.page > p {
+  color: #69758a;
+}
+
+body.dark .page > p {
+  color: #c0cada;
+}
+
+.back-button {
+  border-radius: 11px;
+}
+
+.action-button {
+  border-radius: 11px;
+  box-shadow: 0 5px 13px #4338ca20;
+}
+
+.result {
+  border: 1px solid #dbe4f5;
+  border-radius: 14px;
+}
+
+body.dark .result {
+  border-color: #475569;
+}
+
+@media (max-width: 600px) {
+  .container {
+    margin: 20px auto;
+    padding: 15px;
+    border-radius: 20px;
+  }
+
+  .hero {
+    padding: 24px 19px;
+    border-radius: 19px;
+  }
+
+  .hero-decoration {
+    left: -5px;
+    bottom: -40px;
+    font-size: 180px;
+  }
+
+  .tool-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .tool-card {
+    padding: 18px;
+  }
+
+  .home-heading {
+    margin-top: 27px;
+  }
+
+  .home-heading h2 {
+    font-size: 20px;
+  }
+
+  .home-footer {
+    flex-direction: column;
+  }
+}
+
+/* بهبود نمایش در موبایل */
+@media (max-width: 600px) {
+  body {
+    padding: 20px 10px;
+  }
+
+  .container {
+    padding: 16px;
+  }
+
+  h1 {
+    font-size: 24px;
+  }
+
+  h2 {
+    font-size: 20px;
+  }
+
+  input,
+  select,
+  textarea {
+    width: 100%;
+    max-width: 100%;
+    font-size: 16px;
+  }
+
+  button {
+    max-width: 100%;
+    touch-action: manipulation;
+  }
+
+  .fraction-input {
+    gap: 6px;
+  }
+
+  .tool-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* واضح‌تر شدن ورودی‌ها و پیام‌های خطا */
+input:focus,
+select:focus,
+textarea:focus {
+  outline: 2px solid #3b82f6;
+  outline-offset: 2px;
+}
+
+button:focus-visible {
+  outline: 3px solid #60a5fa;
+  outline-offset: 3px;
+}
+
+.error {
+  color: #b91c1c;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: 10px;
+  padding: 12px;
+  margin-top: 12px;
+  line-height: 1.8;
+  white-space: pre-line;
+}
+
+input::placeholder {
+  opacity: 0.75;
+}
+
+
+/* ===== پرداخت نهایی ظاهر و تجربهٔ کاربری ===== */
+:root {
+  --main-color: #5750e8;
+  --main-hover: #4338ca;
+  --page-bg: #f3f5fc;
+  --card-bg: #ffffff;
+  --text-color: #20243a;
+  --muted-color: #667085;
+  --border-color: #e3e7f1;
+  --input-bg: #ffffff;
+  --soft-bg: #eef2ff;
+  --card-shadow: 0 16px 45px rgba(31, 41, 90, .09);
+}
+
+html { scroll-behavior: smooth; }
+body {
+  min-height: 100vh;
+  background:
+    radial-gradient(ellipse at 8% 4%, rgba(129, 140, 248, .18), transparent 34%),
+    radial-gradient(ellipse at 95% 75%, rgba(45, 212, 191, .09), transparent 28%),
+    var(--page-bg);
+  color: var(--text-color);
+  -webkit-font-smoothing: antialiased;
+}
+body.dark {
+  --page-bg: #0b1120;
+  --card-bg: #151e30;
+  --text-color: #eef2ff;
+  --muted-color: #b8c3d8;
+  --border-color: #2d3a52;
+  --input-bg: #101827;
+  --soft-bg: #222747;
+  --card-shadow: 0 18px 50px rgba(0, 0, 0, .25);
+  background:
+    radial-gradient(ellipse at 8% 4%, rgba(99, 102, 241, .16), transparent 34%),
+    #0b1120;
+}
+.container {
+  width: min(100% - 28px, 1040px);
+  margin: 34px auto;
+  padding: clamp(16px, 3vw, 32px);
+  border: 1px solid var(--border-color);
+  border-radius: 28px;
+  background: var(--card-bg);
+  box-shadow: var(--card-shadow);
+}
+body.dark .container { background: var(--card-bg); border-color: var(--border-color); }
+#themeButton {
+  top: 16px;
+  left: 16px;
+  border: 1px solid var(--border-color);
+  box-shadow: 0 6px 20px rgba(20, 30, 60, .12);
+  backdrop-filter: blur(12px);
+}
+.hero {
+  padding: clamp(24px, 4vw, 42px);
+  border: 1px solid rgba(255,255,255,.2);
+  background:
+    radial-gradient(circle at 12% 15%, rgba(255,255,255,.18), transparent 24%),
+    linear-gradient(125deg, #3730a3 0%, #5b55e7 54%, #818cf8 100%);
+  box-shadow: 0 18px 36px rgba(79, 70, 229, .2);
+}
+.hero-label { letter-spacing: .1px; }
+.hero p { line-height: 2; }
+.hero-button {
+  min-height: 48px;
+  box-shadow: 0 7px 18px rgba(15, 23, 42, .13);
+}
+.home-heading { align-items: center; }
+.tool-count {
+  border: 1px solid #dfe4ff;
+  background: #eef2ff;
+}
+body.dark .tool-count { border-color: #454477; }
+.tool-card {
+  position: relative;
+  overflow: hidden;
+  min-height: 224px;
+  padding: 23px;
+  border-color: var(--border-color);
+  border-radius: 20px;
+  background: var(--card-bg);
+  color: var(--text-color);
+  box-shadow: 0 4px 14px rgba(31, 41, 90, .025);
+}
+.tool-card::after {
+  position: absolute;
+  content: "";
+  inset-inline-start: 0;
+  top: 0;
+  width: 4px;
+  height: 0;
+  border-radius: 0 0 6px 6px;
+  background: var(--main-color);
+  transition: height .2s ease;
+}
+.tool-card:hover::after { height: 100%; }
+.tool-card:hover {
+  transform: translateY(-4px);
+  border-color: #c7d2fe;
+  box-shadow: 0 16px 30px rgba(55, 48, 163, .10);
+}
+body.dark .tool-card {
+  background: #182338;
+  border-color: var(--border-color);
+  color: var(--text-color);
+}
+body.dark .tool-card:hover {
+  background: #1b2942;
+  border-color: #7775ed;
+}
+.tool-icon {
+  width: 50px;
+  height: 50px;
+  border: 1px solid rgba(99, 102, 241, .08);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.5);
+}
+.tool-description { color: var(--muted-color); }
+body.dark .tool-description { color: #c0cada; }
+.tool-link { color: var(--main-color); }
+body.dark .tool-link { color: #b5b4ff; }
+.page > h2 {
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--border-color);
+}
+.page > p { color: var(--muted-color); }
+body.dark .page > p { color: var(--muted-color); }
+.back-button {
+  border: 1px solid var(--border-color);
+  background: var(--soft-bg);
+}
+.action-button { min-height: 46px; }
+input, select, textarea {
+  min-height: 46px;
+  border-color: var(--border-color);
+  background: var(--input-bg);
+  color: var(--text-color);
+}
+input::placeholder { color: #98a2b3; }
+.result {
+  border-color: var(--border-color);
+  background: var(--soft-bg);
+}
+body.dark .result { background: var(--soft-bg); border-color: var(--border-color); color: var(--text-color); }
+.calculator-shell {
+  border-color: var(--border-color);
+  background: var(--soft-bg);
+  box-shadow: 0 12px 30px rgba(31, 41, 90, .06);
+}
+body.dark .calculator-shell { background: #111a2b; border-color: var(--border-color); }
+.calculator-display {
+  min-height: 64px;
+  border-width: 2px;
+  font-size: clamp(21px, 4vw, 27px);
+}
+.calc-key {
+  min-height: 54px;
+  border: 1px solid transparent;
+  border-radius: 13px;
+  box-shadow: 0 2px 0 rgba(15, 23, 42, .06);
+}
+.calc-key:hover { filter: brightness(.98); transform: translateY(-2px); }
+.calc-key:active { transform: translateY(0); }
+.calc-equals { background: linear-gradient(135deg, #5750e8, #4338ca); }
+.number-cell { border: 1px solid var(--border-color); }
+.number-cell.prime { border-color: #a7f3d0; }
+.number-cell.not-prime { border-color: #fecaca; }
+.home-footer { color: var(--muted-color); border-color: var(--border-color); }
+body.dark .home-footer { color: var(--muted-color); border-color: var(--border-color); }
+button:focus-visible, input:focus-visible, select:focus-visible {
+  outline: 3px solid rgba(99, 102, 241, .45);
+  outline-offset: 3px;
+}
+@media (min-width: 760px) {
+  .tool-grid { gap: 18px; }
+}
+@media (max-width: 600px) {
+  body { padding: 48px 8px 12px; }
+  .container {
+    width: 100%;
+    margin: 10px auto;
+    padding: 14px;
+    border-radius: 21px;
+  }
+  #themeButton {
+    top: 8px;
+    left: 8px;
+    padding: 8px 11px;
+    font-size: 13px;
+  }
+  .hero { padding: 23px 18px; }
+  .hero h1 { font-size: 26px; }
+  .home-heading { align-items: flex-start; }
+  .tool-count { font-size: 12px; white-space: nowrap; }
+  .tool-card { min-height: 0; padding: 17px; }
+  .tool-icon { margin-bottom: 12px; }
+  .tool-link { margin-top: 12px; }
+  .calculator-shell { padding: 12px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    scroll-behavior: auto !important;
+    transition-duration: .01ms !important;
+    animation-duration: .01ms !important;
+  }
+}
+
+
+/* ===== Neon tech theme: navy, violet and electric blue ===== */
+:root {
+  color-scheme: light;
+  --main-color: #6d5cff;
+  --main-hover: #4d3df0;
+  --page-bg: #070b1c;
+  --card-bg: #0c1430;
+  --text-color: #edf2ff;
+  --muted-color: #a6b5d8;
+  --border-color: #253b70;
+  --input-bg: #080f25;
+  --soft-bg: #111d3d;
+  --card-shadow: 0 12px 36px rgba(0, 0, 0, .24);
+}
+body {
+  color-scheme: dark;
+  padding-top: 82px;
+  color: var(--text-color);
+  background:
+    radial-gradient(ellipse at 12% 0%, rgba(92, 42, 255, .23), transparent 35%),
+    radial-gradient(ellipse at 92% 22%, rgba(0, 179, 255, .12), transparent 32%),
+    #070b1c;
+}
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  opacity: .16;
+  background-image: linear-gradient(rgba(93, 125, 220, .12) 1px, transparent 1px),
+                    linear-gradient(90deg, rgba(93, 125, 220, .12) 1px, transparent 1px);
+  background-size: 34px 34px;
+  mask-image: linear-gradient(to bottom, black, transparent 85%);
+}
+.container, body.dark .container {
+  max-width: 1120px;
+  background: rgba(10, 17, 39, .91);
+  color: #edf2ff;
+  border: 1px solid #253b70;
+  border-radius: 26px;
+  box-shadow: 0 20px 70px rgba(0,0,0,.32), 0 0 32px rgba(75, 70, 229, .08);
+  backdrop-filter: blur(12px);
+}
+.hero {
+  border: 1px solid rgba(95, 107, 255, .55);
+  background: linear-gradient(120deg, #111746 0%, #17104b 54%, #062d53 100%);
+  box-shadow: inset 0 1px rgba(255,255,255,.05), 0 12px 40px rgba(55, 40, 180, .18);
+}
+.hero::after {
+  content: "";
+  position: absolute;
+  width: 240px;
+  height: 240px;
+  left: -90px;
+  top: -130px;
+  border: 1px solid rgba(0, 195, 255, .3);
+  border-radius: 50%;
+  box-shadow: 0 0 0 25px rgba(88, 70, 255, .05), 0 0 0 55px rgba(0, 195, 255, .035);
+  pointer-events: none;
+}
+.hero h1 {
+  background: linear-gradient(90deg, #d879ff, #7d8cff 50%, #38d7ff);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+.hero p, .hero-label { color: #dbe6ff; }
+.hero-label {
+  border-color: #7069ff88;
+  background: #5141c52b;
+}
+.hero-button {
+  background: linear-gradient(100deg, #733cff, #246bff);
+  color: white;
+  box-shadow: 0 0 22px rgba(98, 67, 255, .34);
+}
+.hero-button:hover { background: linear-gradient(100deg, #8654ff, #168bff); }
+.hero-decoration { color: #5b67ff1f; }
+.home-heading h2, h1, h2 { color: #aebaff; }
+.home-heading p, body.dark .home-heading p { color: #a6b5d8; }
+.tool-count, body.dark .tool-count {
+  color: #dce4ff;
+  background: #151d43;
+  border: 1px solid #343d82;
+}
+.tool-grid { gap: 17px; }
+.tool-card {
+  min-height: 205px;
+  background: linear-gradient(145deg, rgba(15, 27, 59, .98), rgba(8, 15, 35, .98));
+  color: #edf2ff;
+  border: 1px solid #263e78;
+  border-radius: 18px;
+  box-shadow: inset 0 1px rgba(255,255,255,.035);
+}
+.tool-card:hover {
+  border-color: #7065ff;
+  transform: translateY(-4px);
+  box-shadow: 0 12px 28px rgba(24, 20, 95, .32), 0 0 18px rgba(85, 74, 255, .13);
+}
+.tool-icon {
+  background: linear-gradient(145deg, #3520a3, #102b70);
+  border: 1px solid #7466ff;
+  color: #a8f1ff;
+  box-shadow: 0 0 16px rgba(101, 75, 255, .28);
+}
+.tool-title { color: #f0f3ff; }
+.tool-description, .tool-link { color: #aabbe2; }
+.menu-button, .action-button {
+  background: linear-gradient(100deg, #7040ff, #315fff);
+  color: #fff;
+  border: 1px solid #7770ff;
+  box-shadow: 0 5px 18px rgba(67, 60, 220, .2);
+}
+.menu-button:hover, .action-button:hover {
+  background: linear-gradient(100deg, #8558ff, #168dff);
+  box-shadow: 0 0 22px rgba(81, 95, 255, .3);
+}
+.back-button, #themeButton {
+  color: #dce5ff;
+  background: #111c3c;
+  border: 1px solid #344a83;
+}
+#themeButton {
+  top: 15px;
+  left: 15px;
+  box-shadow: 0 5px 24px rgba(0,0,0,.28), 0 0 15px rgba(91,76,255,.14);
+}
+input, select, textarea {
+  color: #f1f5ff;
+  background: #080f25;
+  border-color: #2b4075;
+}
+input::placeholder, textarea::placeholder { color: #7f91bd; }
+input:focus, select:focus, textarea:focus {
+  border-color: #7a70ff;
+  box-shadow: 0 0 0 3px rgba(109, 92, 255, .18), 0 0 16px rgba(65, 135, 255, .12);
+}
+.result {
+  color: #edf2ff;
+  background: linear-gradient(145deg, #101c3c, #0b132b);
+  border: 1px solid #293f75;
+}
+.error { background: #381827; color: #ffc3d2; border-color: #9f3659; }
+.factor-final, .factor-tree {
+  background: #0b1530;
+  color: #edf2ff;
+  border-color: #2b4075;
+}
+.factor-final h3, .factor-tree h3, .factor-equation { color: #a9b8ff; }
+.tree-node { background: #18285a; color: #dce5ff; }
+.tree-leaf { background: #103d47; color: #a8fff0; border-color: #1f9e9a; }
+.tree-line { stroke: #607ab6; }
+.number-cell { background: #172342; color: #dce5ff; border: 1px solid #263a68; }
+.number-cell.prime { background: #103c39; color: #a7ffe6; }
+.number-cell.not-prime { background: #451b32; color: #ffc1d1; }
+.home-footer { border-color: #263b70; color: #92a6d4; }
+body.dark .factor-tree, body.dark .factor-final { background: #0b1530; border-color: #2b4075; }
+body.dark .factor-tree h3, body.dark .factor-final h3, body.dark .factor-equation { color: #a9b8ff; }
+body.dark .tree-node { background: #18285a; color: #dce5ff; }
+body.dark .tree-leaf { background: #103d47; color: #a8fff0; }
+body.dark .tree-line { stroke: #607ab6; }
+button:focus-visible {
+  outline: 2px solid #52dfff;
+  outline-offset: 3px;
+}
+@media (max-width: 600px) {
+  body { padding: 76px 9px 18px; }
+  .container { margin: 8px auto; padding: 14px; border-radius: 19px; }
+  .hero { padding: 23px 18px; }
+  .tool-grid { gap: 10px; }
+  .tool-card { min-height: 0; padding: 15px; }
+  #themeButton { max-width: calc(100vw - 24px); }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+}
+
+
+/* ===== Blue-only technology palette: remove purple accents ===== */
+:root {
+  --main-color: #168cff;
+  --main-hover: #0875e8;
+  --page-bg: #050b18;
+  --card-bg: #09162b;
+  --text-color: #edf7ff;
+  --muted-color: #a8c4e5;
+  --border-color: #174a7a;
+  --input-bg: #061225;
+  --soft-bg: #0b2340;
+  --card-shadow: 0 12px 36px rgba(0, 0, 0, .28);
+}
+body {
+  background:
+    radial-gradient(ellipse at 12% 0%, rgba(0, 116, 255, .23), transparent 36%),
+    radial-gradient(ellipse at 92% 22%, rgba(0, 205, 255, .13), transparent 32%),
+    #050b18;
+}
+body::before {
+  background-image: linear-gradient(rgba(40, 145, 255, .11) 1px, transparent 1px),
+                    linear-gradient(90deg, rgba(40, 145, 255, .11) 1px, transparent 1px);
+}
+.container, body.dark .container {
+  background: rgba(6, 16, 34, .94);
+  border-color: #17416d;
+  box-shadow: 0 20px 70px rgba(0,0,0,.34), 0 0 32px rgba(0, 119, 255, .08);
+}
+.hero {
+  border-color: rgba(36, 157, 255, .52);
+  background: linear-gradient(120deg, #09234b 0%, #073b68 54%, #065a82 100%);
+  box-shadow: inset 0 1px rgba(255,255,255,.05), 0 12px 40px rgba(0, 100, 220, .18);
+}
+.hero::after {
+  border-color: rgba(0, 205, 255, .32);
+  box-shadow: 0 0 0 25px rgba(0, 119, 255, .05), 0 0 0 55px rgba(0, 205, 255, .035);
+}
+.hero h1 {
+  background: linear-gradient(90deg, #75d9ff, #eaf8ff 45%, #39baff);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+.hero-label { border-color: #38bdf866; background: #0284c72b; }
+.hero-button {
+  background: linear-gradient(100deg, #0878e8, #00a8e8);
+  color: white;
+  box-shadow: 0 0 22px rgba(0, 145, 255, .28);
+}
+.hero-button:hover { background: linear-gradient(100deg, #168cff, #00c1ed); }
+.hero-decoration { color: #22baff1f; }
+.home-heading h2, h1, h2 { color: #8bd8ff; }
+.tool-count, body.dark .tool-count {
+  color: #d9f3ff;
+  background: #0b2340;
+  border-color: #1b568a;
+}
+.tool-card {
+  background: linear-gradient(145deg, rgba(9, 30, 58, .98), rgba(5, 16, 34, .98));
+  border-color: #174675;
+}
+.tool-card:hover {
+  border-color: #12b9ff;
+  box-shadow: 0 12px 28px rgba(0, 70, 150, .30), 0 0 18px rgba(0, 170, 255, .13);
+}
+.tool-icon {
+  background: linear-gradient(145deg, #07559b, #092c59);
+  border-color: #19baff;
+  color: #baf3ff;
+  box-shadow: 0 0 16px rgba(0, 164, 255, .24);
+}
+.tool-description, .tool-link { color: #a8c7e8; }
+.menu-button, .action-button {
+  background: linear-gradient(100deg, #0878e8, #009edb);
+  border-color: #2ebdff;
+  box-shadow: 0 5px 18px rgba(0, 130, 220, .2);
+}
+.menu-button:hover, .action-button:hover {
+  background: linear-gradient(100deg, #168cff, #00bce8);
+  box-shadow: 0 0 22px rgba(0, 155, 255, .28);
+}
+.back-button, #themeButton {
+  color: #d9efff;
+  background: #0a203b;
+  border-color: #1a5485;
+}
+#themeButton { box-shadow: 0 5px 24px rgba(0,0,0,.28), 0 0 15px rgba(0,140,255,.12); }
+input, select, textarea { background: #061225; border-color: #1c4772; }
+input:focus, select:focus, textarea:focus {
+  border-color: #16baff;
+  box-shadow: 0 0 0 3px rgba(0, 157, 255, .17), 0 0 16px rgba(0, 175, 255, .12);
+}
+.result { background: linear-gradient(145deg, #0b2340, #07162b); border-color: #1b4775; }
+.factor-final, .factor-tree { background: #081a32; border-color: #1b4775; }
+.factor-final h3, .factor-tree h3, .factor-equation { color: #80d7ff; }
+.tree-node { background: #123b68; color: #e0f4ff; }
+.tree-leaf { background: #064451; color: #a8fff0; border-color: #0ea5a4; }
+.tree-line { stroke: #4b91c5; }
+.number-cell { background: #102746; color: #dceeff; border-color: #1a426a; }
+.number-cell.prime { background: #0b4144; color: #a7fff0; }
+.home-footer { border-color: #17416d; color: #92b6d8; }
+button:focus-visible { outline-color: #38d9ff; }
+
+
+/* GitHub link in the footer */
+.home-footer .github-link-wrap { display: inline-flex; align-items: center; }
+.home-footer .github-link { display: inline-flex; align-items: center; gap: 7px; color: inherit; text-decoration: none; }
+.home-footer .github-link:hover { color: #168cff; }
+.home-footer .github-mark { flex: 0 0 auto; }
+</style>
+</head>
+<body>
+
+
+<main class="container">
+
+
+<section id="home" class="page active">
+
+  <header class="hero">
+    <div class="hero-label">✦ همراه هوشمند ریاضی تو</div>
+    <h1>ریاضی، ساده‌تر از همیشه!</h1>
+    <p>
+      ابزارهای کاربردی ریاضی را انتخاب کن، محاسبه کن
+      و جواب را مرحله‌به‌مرحله بررسی کن.
+    </p>
+    <button class="hero-button" onclick="showPage('factorization')">
+      شروع با تجزیه اعداد
+      <span>←</span>
+    </button>
+    <div class="hero-decoration" aria-hidden="true">∑</div>
+  </header>
+
+  <div class="home-heading">
+    <div>
+      <h2>جعبه‌ابزار ریاضی</h2>
+      <p>ابزار موردنیازت را انتخاب کن.</p>
+    </div>
+    <span class="tool-count">۶ ابزار</span>
+  </div>
+
+  <div class="tool-grid">
+
+    <button class="tool-card card-purple"
+      onclick="showPage('calculator')">
+      <span class="tool-icon">＋</span>
+      <span class="tool-title">ماشین‌حساب</span>
+      <span class="tool-description">محاسبهٔ چهار عمل اصلی با اعداد صحیح و اعشاری</span>
+      <span class="tool-link">باز کردن ابزار ←</span>
+    </button>
+
+    <button class="tool-card card-blue"
+  onclick="showPage('fractions')">
+  <span class="tool-icon">½</span>
+  <span class="tool-title">محاسبهٔ کسرها</span>
+  <span class="tool-description">
+    جمع، تفریق، ضرب و تقسیم کسرها با ساده‌سازی جواب
+  </span>
+  <span class="tool-link">باز کردن ابزار ←</span>
+</button>
+
+    <button class="tool-card card-purple"
+      onclick="showPage('factorization')">
+      <span class="tool-icon">⑂</span>
+      <span class="tool-title">تجزیه به عوامل اول</span>
+      <span class="tool-description">
+        تجزیهٔ عدد همراه با نمایش درخت تجزیه
+      </span>
+      <span class="tool-link">باز کردن ابزار ←</span>
+    </button>
+
+    <button class="tool-card card-green"
+      onclick="showPage('gcd')">
+      <span class="tool-icon">÷</span>
+      <span class="tool-title">ب.م.م و ک.م.م</span>
+      <span class="tool-description">
+        محاسبهٔ بزرگ‌ترین مقسوم‌علیه و کوچک‌ترین مضرب مشترک
+      </span>
+      <span class="tool-link">باز کردن ابزار ←</span>
+    </button>
+
+    <button class="tool-card card-orange"
+      onclick="showPage('prime')">
+      <span class="tool-icon">✓</span>
+      <span class="tool-title">تشخیص عدد اول</span>
+      <span class="tool-description">
+        بررسی اول یا مرکب بودن یک عدد
+      </span>
+      <span class="tool-link">باز کردن ابزار ←</span>
+    </button>
+
+    <button class="tool-card card-blue"
+      onclick="showPage('sieve')">
+      <span class="tool-icon">#</span>
+      <span class="tool-title">غربال اراتستن</span>
+      <span class="tool-description">
+        پیدا کردن اعداد اول در یک بازه
+      </span>
+      <span class="tool-link">باز کردن ابزار ←</span>
+    </button>
+
+  </div>
+
+    <footer class="home-footer">
+    <span>ساخته‌شده برای یادگیری بهتر ریاضی</span>
+    <span>✦ یاد بگیر، محاسبه کن، پیشرفت کن</span>
+    <span class="github-link-wrap">
+      <a class="github-link" href="https://github.com/mmd223-va/math-tools" target="_blank" rel="noopener noreferrer" aria-label="مشاهده مخزن سایت در GitHub">
+        <svg class="github-mark" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
+          <path fill="currentColor" d="M12 .9a11.1 11.1 0 0 0-3.51 21.63c.55.1.76-.24.76-.53v-2.08c-3.1.67-3.76-1.32-3.76-1.32-.5-1.29-1.24-1.63-1.24-1.63-1.01-.69.08-.68.08-.68 1.12.08 1.71 1.15 1.71 1.15 1 .1.75 2.4 3.14 1.7.1-.72.39-1.21.7-1.49-2.48-.28-5.09-1.24-5.09-5.52 0-1.22.44-2.22 1.15-3-.12-.28-.5-1.42.11-2.96 0 0 .94-.3 3.05 1.14a10.6 10.6 0 0 1 5.55 0c2.11-1.44 3.04-1.14 3.04-1.14.61 1.54.23 2.68.12 2.96.71.78 1.14 1.78 1.14 3 0 4.29-2.61 5.24-5.1 5.51.4.35.75 1.03.75 2.08V22c0 .29.2.63.77.52A11.1 11.1 0 0 0 12 .9Z"/>
+        </svg>
+        <span>my github</span>
+      </a>
+    </span>
+      <span class="creator-credit">
+      طراحی و توسعه توسط <strong>mmd223</strong> ❤️
+    </span>
+  </footer>
+
+</section>
+
+
+<section id="factorization" class="page">
+  <button class="back-button" onclick="showPage('home')">← بازگشت به صفحه اصلی</button>
+  <h2>تجزیه عدد به عوامل اول</h2>
+  <p>یک عدد صحیح بزرگ‌تر یا مساوی ۲ وارد کن.</p>
+  <input type="number" id="factorNumber" min="2" step="1" placeholder="مثلاً 60">
+  <button class="action-button" onclick="factorizeNumber()">تجزیه عدد</button>
+  <div id="factorResult" hidden></div>
+</section>
+
+<section id="fractions" class="page">
+  <button class="back-button" onclick="showPage('home')">
+    ← بازگشت به صفحه اصلی
+  </button>
+
+  <h2>محاسبه کسرها</h2>
+  <p>دو کسر وارد کن و عمل ریاضی موردنظرت رو انتخاب کن.</p>
+
+  <div class="input-group">
+    <label>کسر اول</label>
+    <div class="fraction-input">
+      <input id="fraction-num1" type="number" placeholder="صورت" />
+      <span>―</span>
+      <input id="fraction-den1" type="number" placeholder="مخرج" />
+    </div>
+  </div>
+
+  <div class="input-group">
+    <label>کسر دوم</label>
+    <div class="fraction-input">
+      <input id="fraction-num2" type="number" placeholder="صورت" />
+      <span>―</span>
+      <input id="fraction-den2" type="number" placeholder="مخرج" />
+    </div>
+  </div>
+
+  <div class="input-group">
+    <label for="fraction-operation">عملیات</label>
+    <select id="fraction-operation">
+      <option value="add">جمع (+)</option>
+      <option value="subtract">تفریق (−)</option>
+      <option value="multiply">ضرب (×)</option>
+      <option value="divide">تقسیم (÷)</option>
+    </select>
+  </div>
+
+  <button class="action-button" onclick="calculateFractions()">
+    محاسبه
+  </button>
+
+<div id="fraction-result" class="result" aria-live="polite" hidden></div>
+</section>
+
+<section id="sieve" class="page">
+  <button class="back-button" onclick="showPage('home')">← بازگشت به صفحه اصلی</button>
+  <h2>غربال اراتستن</h2>
+  <p>یک عدد صحیح بین ۲ تا ۱۰۰۰۰ وارد کن تا اعداد اول را پیدا کنیم.</p>
+  <input type="number" id="sieveLimit" min="2" max="10000" step="1" placeholder="مثلاً 30">
+  <button class="action-button" onclick="runSieve()">پیدا کردن اعداد اول</button>
+  <div id="sieveResult" class="result" hidden></div>
+  <div id="sieveGrid" class="prime-grid"></div>
+</section>
+
+<section id="gcd" class="page">
+  <button class="back-button" onclick="showPage('home')">← بازگشت به صفحه اصلی</button>
+  <h2>محاسبه ب.م.م و ک.م.م</h2>
+  <p>دو عدد صحیح نامنفی وارد کن؛ حداقل یکی باید بزرگ‌تر از صفر باشد.</p>
+  <input type="number" id="num1" min="0" step="1" placeholder="عدد اول">
+  <input type="number" id="num2" min="0" step="1" placeholder="عدد دوم">
+  <button class="action-button" onclick="calculateGcdLcm()">محاسبه</button>
+  <div id="gcdResult" class="result" hidden></div>
+</section>
+
+<section id="prime" class="page">
+  <button class="back-button" onclick="showPage('home')">← بازگشت به صفحه اصلی</button>
+  <h2>تشخیص عدد اول</h2>
+  <p>یک عدد صحیح بزرگ‌تر یا مساوی ۲ وارد کن.</p>
+  <input type="number" id="primeNumber" min="2" step="1" placeholder="مثلاً 17">
+  <button class="action-button" onclick="checkPrime()">بررسی عدد</button>
+  <div id="primeResult" class="result" hidden></div>
+</section>
+
+<section id="calculator" class="page">
+  <button class="back-button" onclick="showPage('home')">← بازگشت به صفحه اصلی</button>
+  <h2>ماشین‌حساب</h2>
+  <p>عبارت دلخواهت را با چند عدد، پرانتز و عملگرهای ریاضی وارد کن.</p>
+  <div class="calculator-shell">
+    <label for="calculatorDisplay">عبارت ریاضی</label>
+    <input id="calculatorDisplay" class="calculator-display" type="text" inputmode="decimal" autocomplete="off" placeholder="مثلاً (12 + 3) ÷ 2" aria-label="عبارت ریاضی" onkeydown="if(event.key==='Escape'){event.preventDefault();clearCalculator();} else if(event.key==='Enter'){event.preventDefault();calculateBasic();}" oninput="sanitizeCalculatorInput(this)">
+    <div class="calculator-keypad">
+      <button type="button" class="calc-key calc-function" onclick="calculatorInsert('(')">(</button>
+      <button type="button" class="calc-key calc-function" onclick="calculatorInsert(')')">)</button>
+      <button type="button" class="calc-key calc-function" onclick="calculatorInsert('%')">%</button>
+      <button type="button" class="calc-key calc-danger" onclick="calculatorBackspace()">⌫</button>
+      <button type="button" class="calc-key" onclick="calculatorInsert('7')">7</button>
+      <button type="button" class="calc-key" onclick="calculatorInsert('8')">8</button>
+      <button type="button" class="calc-key" onclick="calculatorInsert('9')">9</button>
+      <button type="button" class="calc-key calc-function" onclick="calculatorInsert('÷')">÷</button>
+      <button type="button" class="calc-key" onclick="calculatorInsert('4')">4</button>
+      <button type="button" class="calc-key" onclick="calculatorInsert('5')">5</button>
+      <button type="button" class="calc-key" onclick="calculatorInsert('6')">6</button>
+      <button type="button" class="calc-key calc-function" onclick="calculatorInsert('×')">×</button>
+      <button type="button" class="calc-key" onclick="calculatorInsert('1')">1</button>
+      <button type="button" class="calc-key" onclick="calculatorInsert('2')">2</button>
+      <button type="button" class="calc-key" onclick="calculatorInsert('3')">3</button>
+      <button type="button" class="calc-key calc-function" onclick="calculatorInsert('-')">−</button>
+      <button type="button" class="calc-key calc-function" onclick="calculatorInsert('sqrt(')">√</button>
+      <button type="button" class="calc-key" onclick="calculatorInsert('0')">0</button>
+      <button type="button" class="calc-key" onclick="calculatorInsert('.')">.</button>
+      <button type="button" class="calc-key calc-function" onclick="calculatorInsert('+')">+</button>
+      <button type="button" class="calc-key calc-function" onclick="calculatorInsert('²')">x²</button>
+      <button type="button" class="calc-key calc-function" onclick="calculatorInsert('^')">xʸ</button>
+      <button type="button" class="calc-key calc-danger" onclick="clearCalculator()">AC</button>
+      <button type="button" class="calc-key calc-equals" onclick="calculateBasic()">=</button>
+    </div>
+    <div id="calculatorResult" class="result" aria-live="polite" hidden></div>
+    <p class="calculator-help">چهار عمل اصلی، پرانتز، درصد، توان و جذر. با Enter محاسبه کن.</p>
+  </div>
+</section>
+
+</main>
+<script>
+
+function showPage(pageId) {
+  document.querySelectorAll(".page").forEach(page => {
+    page.classList.remove("active");
+  });
+
+  const selected = document.getElementById(pageId);
+
+  if (selected) {
+    selected.classList.add("active");
+  }
+
+  // پاک کردن نتیجه‌های ابزارها هنگام خروج از هر ابزار
+  if (pageId !== "factorization") {
+    const result = document.getElementById("factorResult");
+    result.hidden = true;
+    result.replaceChildren();
+    result.classList.remove("error");
+  }
+
+  if (pageId !== "fractions") {
+    const result = document.getElementById("fraction-result");
+    result.hidden = true;
+    result.replaceChildren();
+    result.classList.remove("error");
+  }
+
+  if (pageId !== "sieve") {
+    const result = document.getElementById("sieveResult");
+    result.hidden = true;
+    result.textContent = "";
+    result.classList.remove("error");
+    document.getElementById("sieveGrid").replaceChildren();
+  }
+
+  if (pageId !== "gcd") {
+    const result = document.getElementById("gcdResult");
+    result.hidden = true;
+    result.textContent = "";
+    result.classList.remove("error");
+  }
+
+  if (pageId !== "prime") {
+    const result = document.getElementById("primeResult");
+    result.hidden = true;
+    result.textContent = "";
+    result.classList.remove("error");
+  }
+
+  if (pageId !== "calculator") {
+    const calculatorResult = document.getElementById("calculatorResult");
+    calculatorResult.hidden = true;
+    calculatorResult.textContent = "";
+    calculatorResult.classList.remove("error");
+  }
+
+  window.scrollTo(0, 0);
+}
+
+function sanitizeCalculatorInput(display) {
+  const original = display.value;
+  const originalCaret = display.selectionStart ?? original.length;
+  const allowed = "0123456789.+−×÷()%⁰¹²³⁴⁵⁶⁷⁸⁹⁻^√ ";
+  let cleaned = "";
+  for (const char of original.replace(/-/g, "−").replace(/\*/g, "×").replace(/\//g, "÷")) {
+    if (!allowed.includes(char)) continue;
+    const previous = cleaned.trimEnd().slice(-1);
+    const isOperator = "+−×÷^%".includes(char);
+    const previousIsOperator = "+−×÷^%".includes(previous);
+    // Minus is allowed as a sign at the beginning, after an opening parenthesis,
+    // or after another operator (for example 5×−2).
+    if (isOperator && previousIsOperator && !(char === "−" && "+×÷^".includes(previous))) continue;
+    cleaned += char;
+  }
+  // Convert an exponent typed after ^ into superscript digits.
+  cleaned = cleaned.replace(/\^(−?)(\d+)/g, (_, sign, digits) => (sign ? "⁻" : "") + [...digits].map(d => "⁰¹²³⁴⁵⁶⁷⁸⁹"[Number(d)]).join(""));
+  if (original !== cleaned) {
+    const caret = Math.min(originalCaret, cleaned.length);
+    display.value = cleaned;
+    display.setSelectionRange(caret, caret);
+  }
+}
+function calculatorInsert(value) {
+  const display = document.getElementById("calculatorDisplay");
+  const start = display.selectionStart ?? display.value.length;
+  const end = display.selectionEnd ?? display.value.length;
+  if (value === "-") value = "−";
+  const before = display.value.slice(0, start);
+  const previous = before.trimEnd().slice(-1);
+  const operators = "+−×÷^%";
+  const isOperator = operators.includes(value);
+  const previousIsOperator = operators.includes(previous);
+  const isUnaryMinus = value === "−" && (!previous || "(+×÷^".includes(previous));
+  if (isOperator && previousIsOperator && !isUnaryMinus) return;
+  if (/[A-Za-z]/.test(value)) value = value.replace(/sqrt\(/g, "√(");
+  display.setRangeText(value, start, end, "end");
+  sanitizeCalculatorInput(display);
+  display.focus();
+}
+function calculatorBackspace() {
+  const display = document.getElementById("calculatorDisplay");
+  const start = display.selectionStart ?? display.value.length;
+  const end = display.selectionEnd ?? display.value.length;
+  if (start !== end) display.setRangeText("", start, end, "end");
+  else if (start > 0) display.setRangeText("", start - 1, start, "end");
+  display.focus();
+}
+function clearCalculator() {
+  document.getElementById("calculatorDisplay").value = "";
+  const result = document.getElementById("calculatorResult");
+  result.hidden = true; result.textContent = ""; result.classList.remove("error");
+  document.getElementById("calculatorDisplay").focus();
+}
+function calculateBasic() {
+  const display = document.getElementById("calculatorDisplay");
+  const result = document.getElementById("calculatorResult");
+  const expression = display.value.trim().replace(/×/g, "*").replace(/÷/g, "/").replace(/−/g, "-").replace(/([⁻]?)([⁰¹²³⁴⁵⁶⁷⁸⁹]+)/g, (_, sign, digits) => "^" + (sign ? "-" : "") + [...digits].map(d => String("⁰¹²³⁴⁵⁶⁷⁸⁹".indexOf(d))).join("")).replace(/√/g, "sqrt").replace(/,/g, ".");
+  result.hidden = false; result.classList.remove("error");
+  if (!expression) { result.classList.add("error"); result.textContent = "لطفاً یک عبارت ریاضی وارد کن."; return; }
+  try {
+    const tokens = expression.match(/sqrt|(?:\d+\.?\d*|\.\d+)(?:e[+-]?\d+)?|[()+\-*/%^]/gi);
+    if (!tokens || tokens.join("") !== expression.replace(/\s+/g, "")) throw new Error("عبارت ریاضی نامعتبر است.");
+    let pos = 0;
+    const peek = () => tokens[pos];
+    const take = () => tokens[pos++];
+    function primary() {
+      const token = take();
+      if (token === "+") return unary();
+      if (token === "-") return -unary();
+      if (token === "(") { const v = addSub(); if (take() !== ")") throw new Error("پرانتزها کامل نیستند."); return v; }
+      if (String(token).toLowerCase() === "sqrt") { if (take() !== "(") throw new Error("بعد از √ باید پرانتز باز بیاید."); const v=addSub(); if(take()!==")") throw new Error("پرانتز جذر کامل نیست."); if(v<0) throw new Error("جذر عدد منفی در اعداد حقیقی تعریف نشده است."); return Math.sqrt(v); }
+      if (token === undefined || !/^(?:\d+\.?\d*|\.\d+)(?:e[+-]?\d+)?$/i.test(token)) throw new Error("عبارت ریاضی نامعتبر است.");
+      return Number(token);
+    }
+    function unary() { return power(); }
+    function power() { let v=primary(); if(peek()==="^"){take();v=Math.pow(v,unary());} while(peek()==="%"){take();v/=100;} return v; }
+    function mulDiv() { let v=unary(); while(peek()==="*"||peek()==="/"){const op=take(),n=unary();if(op==="/"&&n===0)throw new Error("تقسیم بر صفر امکان‌پذیر نیست.");v=op==="*"?v*n:v/n;}return v; }
+    function addSub() { let v=mulDiv();while(peek()==="+"||peek()==="-"){const op=take(),n=mulDiv();v=op==="+"?v+n:v-n;}return v; }
+    const answer=addSub();
+    if(pos!==tokens.length) throw new Error("عبارت ریاضی نامعتبر است.");
+    if(!Number.isFinite(answer)) throw new Error("نتیجه خارج از محدودهٔ قابل محاسبه است.");
+    result.textContent="جواب نهایی: "+Number(answer.toPrecision(12)).toString();
+  } catch(error) { result.classList.add("error");result.textContent=error.message||"عبارت ریاضی نامعتبر است."; }
+}
+
+
+function readInteger(inputId, min, max) {
+  const raw = document.getElementById(inputId).value.trim();
+
+  if (raw === "") return { error: "لطفاً عدد را وارد کن." };
+
+  const value = Number(raw);
+
+  if (!Number.isSafeInteger(value))
+    return { error: "لطفاً یک عدد صحیح معتبر وارد کن." };
+
+  if (value < min || value > max)
+    return { error: "عدد باید بین " + min + " و " + max + " باشد." };
+
+  return { value };
+}
+
+function showResult(elementId, message, isError) {
+  const element = document.getElementById(elementId);
+  element.hidden = false;
+  element.classList.toggle("error", Boolean(isError));
+  element.textContent = message;
+}
+
+function runSieve() {
+  const parsed = readInteger("sieveLimit", 2, 10000);
+  const result = document.getElementById("sieveResult");
+  const grid = document.getElementById("sieveGrid");
+
+  grid.replaceChildren();
+
+  if (parsed.error) {
+    showResult("sieveResult", parsed.error, true);
+    return;
+  }
+
+  const limit = parsed.value;
+  const isPrime = new Array(limit + 1).fill(true);
+  isPrime[0] = false;
+  isPrime[1] = false;
+
+  for (let p = 2; p * p <= limit; p++) {
+    if (isPrime[p]) {
+      for (let m = p * p; m <= limit; m += p) {
+        isPrime[m] = false;
+      }
+    }
+  }
+
+  const primes = [];
+
+  for (let n = 2; n <= limit; n++) {
+    const cell = document.createElement("div");
+    cell.className = "number-cell";
+    cell.textContent = n;
+
+    if (isPrime[n]) {
+      primes.push(n);
+      cell.classList.add("prime");
+    } else {
+      cell.classList.add("not-prime");
+    }
+
+    grid.appendChild(cell);
+  }
+
+  result.hidden = false;
+  result.classList.remove("error");
+  result.textContent =
+    "تعداد اعداد اول تا " + limit + ": " + primes.length +
+    " | اعداد اول: " + primes.join("، ");
+}
+
+function gcd(a, b) {
+  while (b !== 0) {
+    const r = a % b;
+    a = b;
+    b = r;
+  }
+  return a;
+}
+
+function calculateGcdLcm() {
+  const first = readInteger("num1", 0, 10000000);
+const second = readInteger("num2", 0, 10000000);
+  if (first.error) {
+    showResult("gcdResult", first.error, true);
+    return;
+  }
+
+  if (second.error) {
+    showResult("gcdResult", second.error, true);
+    return;
+  }
+
+  const a = first.value;
+  const b = second.value;
+
+  if (a === 0 && b === 0) {
+    showResult(
+      "gcdResult",
+      "برای صفر و صفر، ب.م.م و ک.م.م در این محاسبه تعریف نمی‌شوند.",
+      true
+    );
+    return;
+  }
+
+  const g = gcd(a, b);
+  const l = a === 0 || b === 0 ? 0 : (a / g) * b;
+
+  showResult("gcdResult", "ب.م.م = " + g + "\nک.م.م = " + l, false);
+}
+
+function isPrimeNumber(n) {
+  if (n < 2) return false;
+  if (n === 2) return true;
+  if (n % 2 === 0) return false;
+
+  for (let d = 3; d <= Math.floor(Math.sqrt(n)); d += 2) {
+    if (n % d === 0) return false;
+  }
+
+  return true;
+}
+
+function checkPrime() {
+  const parsed = readInteger("primeNumber", 2, 100000000);
+
+  if (parsed.error) {
+    showResult("primeResult", parsed.error, true);
+    return;
+  }
+
+  const n = parsed.value;
+
+  showResult(
+    "primeResult",
+    isPrimeNumber(n)
+      ? n + " یک عدد اول است."
+      : n + " عدد اول نیست؛ عددی مرکب است.",
+    false
+  );
+}
+
+/* ساخت درخت تجزیه */
+function buildTree(value) {
+  for (let divisor = 2; divisor * divisor <= value; divisor++) {
+    if (value % divisor === 0) {
+      return {
+        value,
+        left: buildTree(divisor),
+        right: buildTree(value / divisor)
+      };
+    }
+  }
+
+  return { value, left: null, right: null };
+}
+
+/* چیدن گره‌ها بر اساس تعداد برگ‌ها */
+function layoutTree(root) {
+  let nextLeaf = 0;
+  const nodes = [];
+  const edges = [];
+  const horizontalGap = 76;
+  const verticalGap = 82;
+  const margin = 35;
+
+  function place(node, depth) {
+    let x;
+
+    if (!node.left && !node.right) {
+      x = nextLeaf * horizontalGap + margin;
+      nextLeaf++;
+    } else {
+      const left = place(node.left, depth + 1);
+      const right = place(node.right, depth + 1);
+      x = (left.x + right.x) / 2;
+
+      edges.push({
+        x1: x,
+        y1: depth * verticalGap + 28,
+        x2: left.x,
+        y2: (depth + 1) * verticalGap + 28
+      });
+
+      edges.push({
+        x1: x,
+        y1: depth * verticalGap + 28,
+        x2: right.x,
+        y2: (depth + 1) * verticalGap + 28
+      });
+    }
+
+    const item = {
+      value: node.value,
+      x,
+      y: depth * verticalGap + 28,
+      leaf: !node.left && !node.right
+    };
+
+    nodes.push(item);
+    return item;
+  }
+
+  place(root, 0);
+
+  return {
+    nodes,
+    edges,
+    width: Math.max(horizontalGap, nextLeaf * horizontalGap) + margin * 2,
+    height: Math.max(...nodes.map(node => node.y)) + 45
+  };
+}
+
+function drawFactorTree(number) {
+  const tree = buildTree(number);
+  const layout = layoutTree(tree);
+  const canvas = document.createElement("div");
+
+  canvas.className = "tree-canvas";
+  canvas.style.width = layout.width + "px";
+  canvas.style.height = layout.height + "px";
+
+  const svgNS = "http://www.w3.org/2000/svg";
+  const svg = document.createElementNS(svgNS, "svg");
+  svg.setAttribute("viewBox", `0 0 ${layout.width} ${layout.height}`);
+  svg.setAttribute("aria-hidden", "true");
+
+  layout.edges.forEach(edge => {
+    const line = document.createElementNS(svgNS, "line");
+    line.setAttribute("x1", edge.x1);
+    line.setAttribute("y1", edge.y1);
+    line.setAttribute("x2", edge.x2);
+    line.setAttribute("y2", edge.y2);
+    line.setAttribute("class", "tree-line");
+    svg.appendChild(line);
+  });
+
+  canvas.appendChild(svg);
+
+  layout.nodes.forEach(node => {
+    const element = document.createElement("span");
+    element.className = node.leaf ? "tree-leaf" : "tree-node";
+    element.textContent = node.value;
+    element.style.left = node.x + "px";
+    element.style.top = node.y + "px";
+    canvas.appendChild(element);
+  });
+
+  return canvas;
+}
+
+function factorizeNumber() {
+  const input = document.getElementById("factorNumber");
+  const result = document.getElementById("factorResult");
+  const raw = input.value.trim();
+  const number = Number(raw);
+
+  if (
+    raw === "" ||
+    !Number.isSafeInteger(number) ||
+    number < 2 || number > 100000000
+  ) {
+    result.hidden = false;
+    result.classList.add("error");
+    result.textContent =
+      "لطفاً یک عدد صحیح بین ۲ تا ۱۰۰٬۰۰۰٬۰۰۰ وارد کن.";
+    return;
+  }
+if (isPrimeNumber(number)) {
+  result.hidden = false;
+  result.classList.remove("error");
+  result.replaceChildren();
+
+  const message = document.createElement("div");
+  message.className = "factor-final";
+  message.textContent =
+    number + " یک عدد اول است و به عوامل اول کوچک‌تر تجزیه نمی‌شود.";
+
+  result.appendChild(message);
+  return;
+}
+  // محاسبه عوامل اول
+  const factors = [];
+  let remaining = number;
+
+  for (
+    let divisor = 2;
+    divisor * divisor <= remaining;
+    divisor++
+  ) {
+    while (remaining % divisor === 0) {
+      factors.push(divisor);
+      remaining /= divisor;
+    }
+  }
+
+  if (remaining > 1) factors.push(remaining);
+
+  // نمایش توان عوامل تکراری
+  const powers = {};
+
+  for (const factor of factors) {
+    powers[factor] = (powers[factor] || 0) + 1;
+  }
+
+  const equation = Object.entries(powers)
+    .map(([factor, power]) =>
+      power === 1
+        ? factor
+        : `${factor}<sup>${power}</sup>`
+    )
+    .join(" × ");
+
+  // ساخت درخت تجزیه
+  function buildTree(value) {
+    for (
+      let divisor = 2;
+      divisor * divisor <= value;
+      divisor++
+    ) {
+      if (value % divisor === 0) {
+        return {
+          value,
+          left: buildTree(divisor),
+          right: buildTree(value / divisor)
+        };
+      }
+    }
+
+    return {
+      value,
+      left: null,
+      right: null
+    };
+  }
+
+  // تعیین مختصات مشترک برای عددها و انتهای شاخه‌ها
+  function layoutTree(root) {
+    const nodes = [];
+    const edges = [];
+    const leafGap = 76;
+    const levelGap = 82;
+    const margin = 35;
+    let leafIndex = 0;
+
+    function place(node, depth) {
+      let x;
+
+      if (node.left === null && node.right === null) {
+        x = margin + leafIndex * leafGap;
+        leafIndex++;
+      } else {
+        const left = place(node.left, depth + 1);
+        const right = place(node.right, depth + 1);
+
+        x = (left.x + right.x) / 2;
+
+        edges.push({
+          x1: x,
+          y1: depth * levelGap + 28,
+          x2: left.x,
+          y2: (depth + 1) * levelGap + 28
+        });
+
+        edges.push({
+          x1: x,
+          y1: depth * levelGap + 28,
+          x2: right.x,
+          y2: (depth + 1) * levelGap + 28
+        });
+      }
+
+      const item = {
+        value: node.value,
+        x,
+        y: depth * levelGap + 28,
+        leaf: node.left === null && node.right === null
+      };
+
+      nodes.push(item);
+      return item;
+    }
+
+    place(root, 0);
+
+    return {
+      nodes,
+      edges,
+      width: Math.max(
+        300,
+        margin * 2 + Math.max(0, leafIndex - 1) * leafGap
+      ),
+      height:
+        Math.max(...nodes.map(node => node.y)) + 45
+    };
+  }
+
+  // رسم خطوط SVG و قرار دادن مرکز هر عدد روی مختصات گره
+  function drawTree(root) {
+    const layout = layoutTree(root);
+    const canvas = document.createElement("div");
+
+    canvas.className = "tree-canvas";
+    canvas.dir = "ltr";
+    canvas.style.width = layout.width + "px";
+    canvas.style.height = layout.height + "px";
+
+    const svgNS = "http://www.w3.org/2000/svg";
+    const svg = document.createElementNS(svgNS, "svg");
+
+    svg.setAttribute(
+      "viewBox",
+      `0 0 ${layout.width} ${layout.height}`
+    );
+    svg.setAttribute("preserveAspectRatio", "xMinYMin meet");
+    svg.setAttribute("aria-hidden", "true");
+
+    for (const edge of layout.edges) {
+      const line = document.createElementNS(svgNS, "line");
+
+      line.setAttribute("x1", edge.x1);
+      line.setAttribute("y1", edge.y1);
+      line.setAttribute("x2", edge.x2);
+      line.setAttribute("y2", edge.y2);
+      line.setAttribute("class", "tree-line");
+
+      svg.appendChild(line);
+    }
+
+    canvas.appendChild(svg);
+
+    for (const node of layout.nodes) {
+      const element = document.createElement("span");
+
+      element.className = node.leaf
+        ? "tree-leaf"
+        : "tree-node";
+
+      element.textContent = node.value;
+      element.style.left = node.x + "px";
+      element.style.top = node.y + "px";
+
+      canvas.appendChild(element);
+    }
+
+    return canvas;
+  }
+
+  // نمایش نتیجه
+  result.hidden = false;
+  result.classList.remove("error");
+  result.replaceChildren();
+
+  const finalBox = document.createElement("div");
+  finalBox.className = "factor-final";
+
+  const title = document.createElement("h3");
+  title.textContent = "تجزیه به عوامل اول";
+
+  const equationBox = document.createElement("div");
+  equationBox.className = "factor-equation";
+  equationBox.dir = "ltr";
+  equationBox.innerHTML = equation;
+
+  finalBox.append(title, equationBox);
+
+  const treeBox = document.createElement("div");
+  treeBox.className = "factor-tree";
+
+  const treeTitle = document.createElement("h3");
+  treeTitle.textContent = "درخت تجزیه";
+
+  treeBox.append(
+    treeTitle,
+    drawTree(buildTree(number))
+  );
+
+  result.append(finalBox, treeBox);
+}
+
+function calculateFractions() {
+  const n1 = Number(document.getElementById("fraction-num1").value);
+const d1 = Number(document.getElementById("fraction-den1").value);
+const n2 = Number(document.getElementById("fraction-num2").value);
+const d2 = Number(document.getElementById("fraction-den2").value);
+
+  const operation = document.getElementById("fraction-operation").value;
+  const result = document.getElementById("fraction-result");
+result.replaceChildren();
+result.classList.remove("error");
+result.hidden = true;
+  const inputs = ["fraction-num1", "fraction-den1", "fraction-num2", "fraction-den2"];
+
+ if (inputs.some(id => document.getElementById(id).value.trim() === "")) {
+  result.hidden = false;
+  result.classList.add("error");
+  result.textContent = "لطفاً صورت و مخرج هر دو کسر را وارد کن.";
+  return;
+}
+  if (![n1, d1, n2, d2].every(Number.isSafeInteger)) {
+  result.hidden = false;
+  result.classList.add("error");
+  result.textContent = "لطفاً برای صورت و مخرج کسرها عدد صحیح معتبر وارد کن.";
+  return;
+}
+  if (d1 === 0 || d2 === 0) {
+  result.hidden = false;
+  result.classList.add("error");
+  result.textContent = "مخرج کسر نمی‌تواند صفر باشد.";
+  return;
+}
+  let numerator;
+  let denominator;
+
+  if (operation === "add") {
+    numerator = n1 * d2 + n2 * d1;
+    denominator = d1 * d2;
+  } else if (operation === "subtract") {
+    numerator = n1 * d2 - n2 * d1;
+    denominator = d1 * d2;
+  } else if (operation === "multiply") {
+    numerator = n1 * n2;
+    denominator = d1 * d2;
+  } else {
+  if (n2 === 0) {
+  result.hidden = false;
+  result.classList.add("error");
+  result.textContent = "تقسیم بر کسر صفر امکان‌پذیر نیست.";
+  return;
+}
+    numerator = n1 * d2;
+    denominator = d1 * n2;
+  }
+
+  if (!Number.isSafeInteger(numerator) ||
+    !Number.isSafeInteger(denominator)) {
+  result.hidden = false;
+  result.classList.add("error");
+  result.textContent = "اعداد خیلی بزرگ هستند؛ لطفاً اعداد کوچک‌تری وارد کن.";
+  return;
+}
+
+  if (denominator < 0) {
+    numerator = -numerator;
+    denominator = -denominator;
+  }
+
+  function gcdForFractions(a, b) {
+    a = Math.abs(a);
+    b = Math.abs(b);
+
+    while (b !== 0) {
+      const remainder = a % b;
+      a = b;
+      b = remainder;
+    }
+
+    return a;
+  }
+
+  const divisor = gcdForFractions(numerator, denominator);
+  numerator /= divisor || 1;
+  denominator /= divisor || 1;
+
+ 
+result.replaceChildren();
+result.classList.remove("error");
+result.hidden = false;
+const title = document.createElement("div");
+title.textContent = "جواب نهایی";
+title.style.fontWeight = "800";
+title.style.marginBottom = "12px";
+result.appendChild(title);
+
+if (denominator === 1) {
+  const whole = document.createElement("div");
+  whole.textContent = String(numerator);
+  whole.style.fontSize = "28px";
+  whole.style.fontWeight = "800";
+  result.appendChild(whole);
+} else {
+  const fraction = document.createElement("span");
+  fraction.style.display = "inline-flex";
+  fraction.style.flexDirection = "column";
+  fraction.style.alignItems = "center";
+  fraction.style.fontSize = "24px";
+  fraction.style.fontWeight = "800";
+
+  const top = document.createElement("span");
+  top.textContent = String(numerator);
+  top.style.padding = "0 10px 4px";
+
+  const line = document.createElement("span");
+  line.style.width = "100%";
+  line.style.borderTop = "2px solid currentColor";
+
+  const bottom = document.createElement("span");
+  bottom.textContent = String(denominator);
+  bottom.style.padding = "4px 10px 0";
+
+  fraction.append(top, line, bottom);
+  result.appendChild(fraction);
+}
+
+}
+
+
+/* فعال‌کردن محاسبه با Enter */
+(function () {
+  const tools = [
+    { page: "factorization", inputs: ["factorNumber"], calculate: factorizeNumber },
+    {
+      page: "fractions",
+      inputs: ["fraction-num1", "fraction-den1", "fraction-num2", "fraction-den2"],
+      calculate: calculateFractions
+    },
+    { page: "sieve", inputs: ["sieveLimit"], calculate: runSieve },
+    { page: "gcd", inputs: ["num1", "num2"], calculate: calculateGcdLcm },
+    { page: "prime", inputs: ["primeNumber"], calculate: checkPrime }
+  ];
+
+  tools.forEach(function (tool) {
+    tool.inputs.forEach(function (id) {
+      const input = document.getElementById(id);
+      if (!input) return;
+
+      input.addEventListener("keydown", function (event) {
+        if (event.key === "Enter" && input.id.startsWith("calculator")) {
+          event.preventDefault();
+          calculateBasic();
+          return;
+        }
+        if (event.key === "Enter") {
+          event.preventDefault();
+          tool.calculate();
+        }
+      });
+    });
+  });
+})();
+</script>
+</body>
+</html>
